@@ -9,7 +9,7 @@ Team: Ruby and Natalie
 Follow these steps to run the pipeline from a fresh clone:
 
 ```bash
-git clone https://github.com/{username}/wvu-ieng-331-m2-3.git
+git clone https://github.com/{username}/wvu-ieng-331-m2-21.git
 cd wvu-ieng-331-m2-21
 
 # install dependencies
