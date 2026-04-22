@@ -1,0 +1,6 @@
+# Local data + DuckDB (large; obtain via GitHub mirror or Kaggle)
+data/olist-mirror/
+olist.duckdb
+*.duckdb
+__pycache__/
+*.pyc

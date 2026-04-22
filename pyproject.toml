@@ -1,0 +1,127 @@
+
+# Design Rationale
+
+This document explains how the pipeline is structured, how data flows through it, and the reasoning behind key design decisions.
+
+## Parameter Flow
+
+The pipeline begins execution in the `main()` function inside `pipeline.py`.
+
+### Step 1: Argument Parsing
+Command-line arguments are parsed using the `parse_args()` function. This function uses the argparse library to define three parameters:
+- start_date
+- end_date
+- seller_state
+
+These values are stored in an arguments object:
+```python
+args = parse_args()
+
+df = get_seller_scorecard(
+    db_path,
+    args.start_date,
+    args.end_date,
+    args.seller_state,
+)
+
+## SQL Parameterization
+
+Inside queries.py, the parameters are passed into DuckDB:
+con.execute(query, [start_date, end_date, seller_state])
+Effect on Data
+If parameters are None, the SQL conditions evaluate to TRUE and no filtering occurs
+If parameters are provided, they restrict the dataset accordingly
+This allows a single query to support both full and filtered analysis.
+
+WHERE ($1 IS NULL OR o.order_purchase_timestamp >= $1)
+  AND ($2 IS NULL OR o.order_purchase_timestamp <= $2)
+  AND ($3 IS NULL OR s.seller_state = $3)
+
+How It Works
+$1, $2, and $3 are placeholders
+Python passes values as a list
+DuckDB safely binds these values at runtime
+Why Parameterized Queries Are Used
+Parameterized queries are used instead of f-strings because they:
+Prevent SQL injection
+Handle data types correctly
+Improve query readability and reuse
+
+Why SQL Is Stored in Files
+SQL is stored in .sql files instead of Python strings because:
+It separates logic from code
+It improves readability and maintainability
+It reflects real-world data engineering practices
+It allows easier debugging and testing
+
+## Validation Logic
+Validation is implemented in validation.py using the run_validation() function.
+1. Table Existence Check
+Confirms all expected tables are present
+Missing tables trigger a warning
+Reason:
+Missing tables will cause queries to fail and break the pipeline.
+2. Row Count Check
+Ensures core tables contain at least 1,000 rows
+Reason:
+Small datasets may produce unreliable or meaningless results.
+3. Date Range Validation
+Checks minimum and maximum order dates
+Reason:
+Ensures data is not empty or invalid (e.g., future dates).
+4. Key Column Validation
+Ensures important identifiers are not entirely NULL
+Reason:
+NULL identifiers would break joins and analysis.
+Behavior on Failure
+Validation issues generate WARNING logs
+The pipeline continues execution
+Reason:
+This design allows flexibility when running on extended datasets, such as the holdout test.
+
+
+## Error Handling
+The pipeline uses specific exception handling instead of a generic except.
+Example 1: FileNotFoundError
+Handles missing database file.
+Why:
+This is a common setup issue and should provide a clear error message.
+Example 2: ValueError
+Handles invalid parameter input.
+Why:
+Ensures incorrect user input does not crash the pipeline unexpectedly.
+Example 3: OSError
+Handles file writing errors.
+Why:
+Captures issues like missing directories or permission errors.
+Why Not Use a Bare except
+A generic except:
+Hides the actual error
+Makes debugging difficult
+Can catch unintended exceptions
+Using specific exceptions improves clarity and reliability.
+
+## Scaling & Adaptation
+
+1. Scaling to 10 Million Orders
+The main bottleneck would be:
+Converting query results from DuckDB to Pandas and then to Polars
+This introduces unnecessary memory usage and slows performance.
+Improvements
+Use DuckDB to perform more aggregation
+Avoid converting through Pandas
+Use Polars directly with DuckDB integration
+Optimize queries with indexing or partitioning
+2. Adding JSON Output
+To add a JSON output format:
+Step 1:
+Modify the save_outputs() function to include:
+df.write_json("output/data.json")
+Step 2:
+No changes are required in other modules.
+Why This Works
+The pipeline is modular:
+queries.py handles data retrieval
+validation.py handles data checks
+pipeline.py handles orchestration and output
+This separation allows easy extension without affecting other components.
