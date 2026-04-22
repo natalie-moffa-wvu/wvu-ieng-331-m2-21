@@ -50,3 +50,5 @@ def run_validation(db_path: str) -> None:
 
     except Exception as e:
         logger.error(f"Validation failed: {e}")
+
+        

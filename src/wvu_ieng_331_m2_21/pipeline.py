@@ -8,6 +8,7 @@ from wvu_ieng_331_m2_3.queries import get_seller_scorecard
 from wvu_ieng_331_m2_3.validation import run_validation
 
 
+
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments."""
     parser = argparse.ArgumentParser()

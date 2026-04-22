@@ -35,3 +35,5 @@ def get_seller_scorecard(
     con.close()
 
     return pl.from_pandas(result)
+
+    
