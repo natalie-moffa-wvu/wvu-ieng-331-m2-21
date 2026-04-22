@@ -1,0 +1,6 @@
+summary = (
+    df.group_by("seller_state")
+    .agg(pl.sum("revenue").alias("total_revenue"))
+)
+
+summary.write_csv(output_dir / "summary.csv")

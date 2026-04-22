@@ -1,0 +1,12 @@
+import altair as alt
+
+chart = (
+    alt.Chart(df.to_pandas())
+    .mark_bar()
+    .encode(
+        x="seller_state",
+        y="revenue"
+    )
+)
+
+chart.save(output_dir / "chart.html")

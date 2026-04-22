@@ -4,3 +4,4 @@ olist.duckdb
 *.duckdb
 __pycache__/
 *.pyc
+data/*.duckdb
