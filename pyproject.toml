@@ -1,4 +1,4 @@
-[project]
+
 name = "wvu-ieng-331-m2-21"
 version = "0.1.0"
 description = "Milestone 2 Python Pipeline for Olist Analysis"
@@ -10,5 +10,4 @@ dependencies = [
     "loguru"
 ]
 
-[project.scripts]
 wvu-ieng-331-m2-21 = "wvu_ieng_331_m2_21.pipeline:main"
